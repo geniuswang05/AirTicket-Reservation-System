@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Airline Staff Dashboard - Wheelan Skylink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .filter-button {
+            flex: 1;
+            padding: 10px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .reset-button {
+            flex: 1;
+            padding: 10px;
+            background-color: #f5f7fa;
+            color: #333;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+        }
+        .reset-button:hover {
+            background-color: #e8eaed;
+        }
+        .filter-button:hover {
+            background-color: #3367d6;
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .status-upcoming {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        .status-inprogress {
+            background-color: #e8f5e9;
+            color: #4caf50;
+        }
+        .status-delayed {
+            background-color: #fff8e1;
+            color: #ffa000;
+        }
+        .status-cancelled {
+            background-color: #ffebee;
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('staff_home') }}" class="active">
+                    <span class="icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('create_flight') }}">
+                    <span class="icon">✈️</span>
+                    <span>Create Flight</span>
+                </a>
+                <a href="{{ url_for('update_flight_status') }}">
+                    <span class="icon">🔄</span>
+                    <span>Update Status</span>
+                </a>
+                <a href="{{ url_for('add_airplane') }}">
+                    <span class="icon">🛩️</span>
+                    <span>Add Airplane</span>
+                </a>
+                <a href="{{ url_for('view_reports') }}">
+                    <span class="icon">📊</span>
+                    <span>Reports</span>
+                </a>
+                <a href="{{ url_for('frequent_customer') }}">
+                    <span class="icon">👥</span>
+                    <span>Customers</span>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Airline Staff Dashboard</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">
+                        <span>Staff: {{ username }}</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>{% if username %}{{ username|string|first|upper }}{% else %}S{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                {% if banner %}
+                    <div class="card" style="background-color: #e8f5e9; color: #4caf50;">
+                        <p>{{ banner }}</p>
+                    </div>
+                {% endif %}
+                
+                {% if error %}
+                    <div class="card" style="background-color: #ffebee; color: #f44336;">
+                        <p>{{ error }}</p>
+                    </div>
+                {% endif %}
+                
+                <div class="card welcome-card">
+                    <h2>Welcome, {% if username %}{{ username }}{% else %}Staff Member{% endif %}!</h2>
+                    <p>Manage flights, track airline performance, and oversee booking operations.</p>
+                </div>
+                
+                <!-- Flight Filter Card -->
+                <div class="card">
+                    <h3>Filter Flights</h3>
+                    <form method="POST" action="{{ url_for('staff_home') }}">
+                        <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-top: 15px;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="display: block; margin-bottom: 5px;">Start Date</label>
+                                <input type="date" name="start_date" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="display: block; margin-bottom: 5px;">End Date</label>
+                                <input type="date" name="end_date" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="display: block; margin-bottom: 5px;">Source Airport</label>
+                                <input type="text" name="source" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="display: block; margin-bottom: 5px;">Destination Airport</label>
+                                <input type="text" name="destination" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="filter-button">Filter Flights</button>
+                            <a href="{{ url_for('staff_home') }}" class="reset-button">Reset Filters</a>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Flights Table Card -->
+                <div class="card">
+                    <h3>My Airline's Flights</h3>
+                    {% if request.method == 'POST' %}
+                    <div style="margin-bottom: 15px">
+                        <a href="{{ url_for('staff_home') }}" class="reset-button" style="display: inline-block; max-width: 200px;">
+                            ← Show All Flights
+                        </a>
+                    </div>
+                    {% endif %}
+                    <div style="overflow-x: auto; margin-top: 15px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background-color: #f5f7fa;">
+                                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Flight Number</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Departure</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Arrival</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Departure Time</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Arrival Time</th>
+                                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for flight in flights %}
+                                <tr style="border-bottom: 1px solid #efefef;">
+                                    <td style="padding: 12px;">{{ flight.flight_num }}</td>
+                                    <td style="padding: 12px;">{{ flight.departure_airport }}</td>
+                                    <td style="padding: 12px;">{{ flight.arrival_airport }}</td>
+                                    <td style="padding: 12px;">{{ flight.departure_time }}</td>
+                                    <td style="padding: 12px;">{{ flight.arrival_time }}</td>
+                                    <td style="padding: 12px;">
+                                        <span class="status-indicator 
+                                            {% if flight.status == 'upcoming' %}status-upcoming
+                                            {% elif flight.status == 'in progress' %}status-inprogress
+                                            {% elif flight.status == 'delayed' %}status-delayed
+                                            {% elif flight.status == 'cancelled' %}status-cancelled
+                                            {% else %}status-upcoming{% endif %}">
+                                            {{ flight.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if not flights %}
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 20px;">No flights available</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions Card -->
+                <div class="quick-actions-card card">
+                    <h3>Management Tools</h3>
+                    <div class="quick-actions" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 15px;">
+                        <a href="{{ url_for('create_flight') }}" class="action-btn" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; transition: transform 0.2s;">
+                            <span class="action-icon" style="font-size: 24px; margin-bottom: 10px;">✈️</span>
+                            <span>Create Flight</span>
+                        </a>
+                        <a href="{{ url_for('update_flight_status') }}" class="action-btn" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; transition: transform 0.2s;">
+                            <span class="action-icon" style="font-size: 24px; margin-bottom: 10px;">🔄</span>
+                            <span>Update Status</span>
+                        </a>
+                        <a href="{{ url_for('add_airplane') }}" class="action-btn" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; transition: transform 0.2s;">
+                            <span class="action-icon" style="font-size: 24px; margin-bottom: 10px;">🛩️</span>
+                            <span>Add Airplane</span>
+                        </a>
+                        <a href="{{ url_for('add_airport') }}" class="action-btn" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; transition: transform 0.2s;">
+                            <span class="action-icon" style="font-size: 24px; margin-bottom: 10px;">🏢</span>
+                            <span>Add Airport</span>
+                        </a>
+                        <a href="{{ url_for('view_reports') }}" class="action-btn" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; transition: transform 0.2s;">
+                            <span class="action-icon" style="font-size: 24px; margin-bottom: 10px;">📊</span>
+                            <span>Sales Reports</span>
+                        </a>
+                        <a href="{{ url_for('revenue_comparison') }}" class="action-btn" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; transition: transform 0.2s;">
+                            <span class="action-icon" style="font-size: 24px; margin-bottom: 10px;">💵</span>
+                            <span>Revenue</span>
+                        </a>
+                        <a href="{{ url_for('top_destinations') }}" class="action-btn" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; transition: transform 0.2s;">
+                            <span class="action-icon" style="font-size: 24px; margin-bottom: 10px;">🌍</span>
+                            <span>Destinations</span>
+                        </a>
+                        <a href="{{ url_for('view_agents') }}" class="action-btn" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; transition: transform 0.2s;">
+                            <span class="action-icon" style="font-size: 24px; margin-bottom: 10px;">🧑‍💼</span>
+                            <span>View Agents</span>
+                        </a>
+                        <a href="{{ url_for('frequent_customer') }}" class="action-btn" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; transition: transform 0.2s;">
+                            <span class="action-icon" style="font-size: 24px; margin-bottom: 10px;">👥</span>
+                            <span>Top Customers</span>
+                        </a>
+                        <a href="{{ url_for('grant_permission') }}" class="action-btn" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; transition: transform 0.2s;">
+                            <span class="action-icon" style="font-size: 24px; margin-bottom: 10px;">🔐</span>
+                            <span>Permissions</span>
+                        </a>
+                        <a href="{{ url_for('add_booking_agent') }}" class="action-btn" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; transition: transform 0.2s;">
+                            <span class="action-icon" style="font-size: 24px; margin-bottom: 10px;">➕</span>
+                            <span>Add Agent</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Public Tools -->
+                <div class="card">
+                    <h3>Public Services</h3>
+                    <div style="display: flex; gap: 15px; margin-top: 15px;">
+                        <a href="{{ url_for('search') }}" style="flex: 1; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; text-align: center; transition: transform 0.2s;">
+                            <span style="display: block; font-size: 24px; margin-bottom: 10px;">🔍</span>
+                            <span>Search Flights</span>
+                        </a>
+                        <a href="{{ url_for('check') }}" style="flex: 1; text-decoration: none; padding: 15px; background-color: #f5f7fa; border-radius: 8px; color: #333; text-align: center; transition: transform 0.2s;">
+                            <span style="display: block; font-size: 24px; margin-bottom: 10px;">🧭</span>
+                            <span>Check Flight Status</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Booking Agent - Wheelan Skylink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input { width: 100%; padding: 12px; border-radius: 4px; border: 1px solid #ddd; }
+        .form-submit { background-color: #4285f4; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: 500; }
+        .form-submit:hover { background-color: #3367d6; }
+        .message-success { padding: 15px; background-color: #e8f5e9; color: #4caf50; border-radius: 4px; margin-bottom: 20px; }
+        .message-error { padding: 15px; background-color: #ffebee; color: #f44336; border-radius: 4px; margin-bottom: 20px; }
+
+        .airline-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('staff_home') }}">
+                    <span class="icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('view_agents') }}">
+                    <span class="icon">🧑‍💼</span>
+                    <span>View Agents</span>
+                </a>
+                <a href="{{ url_for('add_booking_agent') }}" class="active">
+                    <span class="icon">➕</span>
+                    <span>Add Agent</span>
+                </a>
+                <a href="{{ url_for('grant_permission') }}">
+                    <span class="icon">🔐</span>
+                    <span>Permissions</span>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Add Booking Agent
+                        {% if airline_name %}
+                        <span class="airline-badge">{{ airline_name }}</span>
+                        {% endif %}
+                    </h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">
+                        <span>Staff Account</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>S</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <!-- Add Agent Form -->
+                <div class="card">
+                    <h3>Add Booking Agent to Your Airline</h3>
+                    
+                    {% if message %}
+                        <div class="{% if 'successfully' in message %}message-success{% else %}message-error{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        <div class="form-group">
+                            <label for="agent_email">Booking Agent Email:</label>
+                            <input type="email" name="agent_email" id="agent_email" required placeholder="Enter agent's email address">
+                        </div>
+                        <button type="submit" class="form-submit">Add Agent</button>
+                    </form>
+                </div>
+                
+                <!-- Instructions -->
+                <div class="card">
+                    <h3>How This Works</h3>
+                    <p>Adding a booking agent to your airline allows them to book tickets for your airline's flights.</p>
+                    <ul style="margin-top: 15px; padding-left: 20px;">
+                        <li style="margin-bottom: 10px;">The agent must already have an account in the system.</li>
+                        <li style="margin-bottom: 10px;">They'll be authorized to sell tickets only for your airline's flights.</li>
+                        <li style="margin-bottom: 10px;">You can track their performance in the "View Agents" section.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

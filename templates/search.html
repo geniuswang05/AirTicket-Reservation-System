@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Search Flights</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Additional styles for better search form */
+        .search-form-card {
+            padding: 30px 40px;
+        }
+        
+        .search-form-card h3 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .search-form-card p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #7f8c8d;
+            line-height: 1.5;
+        }
+        
+        .search-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            border-color: #4a69bd;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
+        }
+        
+        .form-group input::placeholder {
+            color: #95a5a6;
+            font-size: 15px;
+        }
+        
+        .search-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 500;
+            background-color: #4a69bd;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .search-btn:hover {
+            background-color: #3a539b;
+        }
+        
+        .airport-codes-card {
+            margin-top: 20px;
+        }
+        
+        .airport-codes-card h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .airport-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+        
+        .airport-item {
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+        
+        .airport-item strong {
+            color: #4a69bd;
+            display: block;
+            font-size: 17px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                {% if session.user_type == 'customer' %}
+                    <a href="{{ url_for('customer_home') }}">
+                        <span class="icon">🏠</span>
+                        <span>Home</span>
+                    </a>
+                    <a href="{{ url_for('search') }}" class="active">
+                        <span class="icon">🔍</span>
+                        <span>Search Flights</span>
+                    </a>
+                    <a href="{{ url_for('view_my_flights') }}">
+                        <span class="icon">✈️</span>
+                        <span>My Flights</span>
+                    </a>
+                    <a href="{{ url_for('track_spending') }}">
+                        <span class="icon">💰</span>
+                        <span>Track Spending</span>
+                    </a>
+                {% elif session.user_type == 'agent' %}
+                    <!-- Agent navigation -->
+                {% elif session.user_type == 'staff' %}
+                    <!-- Staff navigation -->
+                {% else %}
+                    <a href="{{ url_for('hello') }}">
+                        <span class="icon">🏠</span>
+                        <span>Home</span>
+                    </a>
+                    <a href="{{ url_for('search') }}" class="active">
+                        <span class="icon">🔍</span>
+                        <span>Search Flights</span>
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Search Flights</h1>
+                </div>
+                <div class="user-info">
+                    {% if session.username %}
+                    <div class="user-name">
+                        <span>{{ session.display_name if session.display_name else session.username }}</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>{{ (session.display_name if session.display_name else session.username)[0] }}</span>
+                    </div>
+                    {% else %}
+                    <div class="user-name">
+                        <span>Guest</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>G</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <div class="card search-form-card">
+                    <h3>Search for Flights</h3>
+                    <p>Enter your travel details to find available flights.</p>
+                    
+                    <form method="POST" action="{{ url_for('search') }}" class="search-form">
+                        <div class="form-group">
+                            <label for="source">From City or Airport:</label>
+                            <input type="text" id="source" name="source" placeholder="e.g. New York or JFK" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="destination">To City or Airport:</label>
+                            <input type="text" id="destination" name="destination" placeholder="e.g. Los Angeles or LAX" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="date">Date of Departure:</label>
+                            <input type="date" id="date" name="date" required>
+                        </div>
+                        
+                        <button type="submit" class="search-btn">Search Flights</button>
+                    </form>
+                </div>
+                
+                <!-- Airport Codes Reference -->
+                <div class="card airport-codes-card">
+                    <h3>Popular Airport Codes</h3>
+                    <div class="airport-grid">
+                        <div class="airport-item">
+                            <strong>JFK</strong>
+                            New York
+                        </div>
+                        <div class="airport-item">
+                            <strong>LAX</strong>
+                            Los Angeles
+                        </div>
+                        <div class="airport-item">
+                            <strong>PVG</strong>
+                            Shanghai
+                        </div>
+                        <div class="airport-item">
+                            <strong>CDG</strong>
+                            Paris
+                        </div>
+                        <div class="airport-item">
+                            <strong>DXB</strong>
+                            Dubai
+                        </div>
+                        <div class="airport-item">
+                            <strong>FRA</strong>
+                            Frankfurt
+                        </div>
+                        <div class="airport-item">
+                            <strong>SFO</strong>
+                            San Francisco
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

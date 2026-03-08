@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Track My Spending</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('customer_home') }}">
+                    <span class="icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('search') }}">
+                    <span class="icon">🔍</span>
+                    <span>Search Flights</span>
+                </a>
+                <a href="{{ url_for('view_my_flights') }}">
+                    <span class="icon">✈️</span>
+                    <span>My Flights</span>
+                </a>
+                <a href="{{ url_for('track_spending') }}" class="active">
+                    <span class="icon">💰</span>
+                    <span>Track Spending</span>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Track My Spending</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">
+                        <span>{{ session.display_name if session.display_name else session.username }}</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>{{ (session.display_name if session.display_name else session.username)[0] }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <!-- Date Filter -->
+                <div class="card">
+                    <h3>Filter by Date Range</h3>
+                    <form id="dateFilterForm" style="display: flex; gap: 20px; align-items: end;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="startDate">Start Date:</label>
+                            <input type="date" id="startDate" name="startDate">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="endDate">End Date:</label>
+                            <input type="date" id="endDate" name="endDate">
+                        </div>
+                        <button type="submit" class="search-btn" style="width: auto;">Apply Filter</button>
+                    </form>
+                </div>
+                
+                <!-- Total Spending -->
+                <div class="card">
+                    <h3>Total Spending</h3>
+                    <p class="stats-value" style="font-size: 36px; color: #4a69bd; margin: 20px 0;" id="totalSpending">Loading...</p>
+                </div>
+                
+                <!-- Monthly Spending Chart -->
+                <div class="card">
+                    <h3>Monthly Spending</h3>
+                    <div style="position: relative; height:400px;">
+                        <canvas id="monthlySpendingChart"></canvas>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let chart;
+        
+        // Month names for display
+        const monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        
+        // Load initial data when page loads
+        loadSpendingData();
+        
+        // Handle form submission
+        document.getElementById('dateFilterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (startDate && endDate) {
+                loadSpendingData(startDate, endDate);
+            } else {
+                alert('Please select both start and end dates');
+            }
+        });
+        
+        function loadSpendingData(startDate = null, endDate = null) {
+            // Show loading state
+            document.getElementById('totalSpending').textContent = 'Loading...';
+            
+            if (startDate && endDate) {
+                // Fetch filtered data
+                fetch('/api/spending_data/filtered', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        startDate: startDate,
+                        endDate: endDate
+                    })
+                })
+                .then(response => response.json())
+                .then(data => updateChart(data))
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Fallback to chartCus if API fails
+                    window.location.href = "{{ url_for('chartCus') }}";
+                });
+            } else {
+                // Fetch default data (last 6 months)
+                fetch('/api/spending_data')
+                .then(response => response.json())
+                .then(data => updateChart(data))
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Fallback to chartCus if API fails
+                    window.location.href = "{{ url_for('chartCus') }}";
+                });
+            }
+        }
+        
+        function updateChart(data) {
+            // Update total spending
+            document.getElementById('totalSpending').textContent = `$${data.totalSpent.toFixed(2)}`;
+            
+            // Prepare chart data
+            const monthlyData = new Array(12).fill(0);
+            
+            // Fill in the data for months that have spending
+            data.monthlyData.forEach(item => {
+                monthlyData[item.month - 1] = item.spent;
+            });
+            
+            // Update or create chart
+            const ctx = document.getElementById('monthlySpendingChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: monthNames,
+                    datasets: [{
+                        label: 'Monthly Spending',
+                        data: monthlyData,
+                        backgroundColor: 'rgba(74, 105, 189, 0.8)',
+                        borderColor: 'rgba(74, 105, 189, 1)',
+                        borderWidth: 1,
+                        barThickness: 40
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Amount ($)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '$' + context.raw.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

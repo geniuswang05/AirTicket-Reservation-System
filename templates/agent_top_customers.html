@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Top Customers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #2196F3;
+            text-decoration: none;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .error {
+            color: #f44336;
+            margin-bottom: 15px;
+        }
+        .report-section {
+            margin-bottom: 40px;
+        }
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        .chart-container {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .chart-title {
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #333;
+        }
+        .chart {
+            height: 300px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding: 0 10px;
+        }
+        .bar {
+            width: 40px;
+            background-color: #4CAF50;
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            transition: height 0.3s ease;
+        }
+        .bar-commission {
+            background-color: #2196F3;
+        }
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 12px;
+            color: #333;
+            width: 80px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #333;
+        }
+        .tables-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        @media (max-width: 768px) {
+            .tables-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .no-data {
+            padding: 20px;
+            text-align: center;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('agent_home') }}" class="back-link">← Back to Home</a>
+        
+        <h1>Top Customers</h1>
+        
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        <div class="report-section">
+            <h2>Top 5 Customers by Number of Tickets (Last 6 Months)</h2>
+            
+            {% if top_by_tickets %}
+                <div class="tables-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Customer</th>
+                                <th>Email</th>
+                                <th>Tickets Purchased</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in top_by_tickets %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ customer.name }}</td>
+                                <td>{{ customer.email }}</td>
+                                <td>{{ customer.ticket_count }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <div class="chart-container">
+                        <h3 class="chart-title">Tickets Purchased</h3>
+                        <div class="chart">
+                            {% for customer in top_by_tickets %}
+                                <div class="bar" style="height: {{ (customer.ticket_count / top_by_tickets[0].ticket_count) * 250 }}px;">
+                                    <div class="bar-value">{{ customer.ticket_count }}</div>
+                                    <div class="bar-label">{{ customer.name }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="no-data">
+                    <p>No data available for the last 6 months.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="report-section">
+            <h2>Top 5 Customers by Commission (Last Year)</h2>
+            
+            {% if top_by_commission %}
+                <div class="tables-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Customer</th>
+                                <th>Email</th>
+                                <th>Commission Generated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in top_by_commission %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ customer.name }}</td>
+                                <td>{{ customer.email }}</td>
+                                <td>${{ '%.2f'|format(customer.total_commission|float) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <div class="chart-container">
+                        <h3 class="chart-title">Commission Amount</h3>
+                        <div class="chart">
+                            {% for customer in top_by_commission %}
+                                <div class="bar bar-commission" style="height: {{ (customer.total_commission / top_by_commission[0].total_commission) * 250 }}px;">
+                                    <div class="bar-value">${{ '%.2f'|format(customer.total_commission|float) }}</div>
+                                    <div class="bar-label">{{ customer.name }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="no-data">
+                    <p>No data available for the last year.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

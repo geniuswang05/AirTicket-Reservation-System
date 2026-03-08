@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Flight Bookings</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Additional styles for filter form and table */
+        .filter-card {
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-card h3 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .filter-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            border-color: #4a69bd;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
+        }
+        
+        .filter-btn {
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            background-color: #4a69bd;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 24px;
+            width: 100%;
+        }
+        
+        .filter-btn:hover {
+            background-color: #3a539b;
+        }
+        
+        .flights-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .flights-table th {
+            padding: 12px 15px;
+            text-align: left;
+            background-color: #f2f2f2;
+            color: #2c3e50;
+            font-weight: 600;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .flights-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .flights-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .flights-table tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .no-flights {
+            padding: 40px 20px;
+            text-align: center;
+            color: #7f8c8d;
+        }
+        
+        .no-flights h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .table-card {
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('agent_home') }}">
+                    <span class="icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('agent_search') }}">
+                    <span class="icon">🔍</span>
+                    <span>Search Flights</span>
+                </a>
+                <a href="{{ url_for('agent_view_flights') }}" class="active">
+                    <span class="icon">✈️</span>
+                    <span>My Bookings</span>
+                </a>
+                <a href="{{ url_for('agent_commission') }}">
+                    <span class="icon">💰</span>
+                    <span>Commission</span>
+                </a>
+                <a href="{{ url_for('agent_top_customers') }}">
+                    <span class="icon">👥</span>
+                    <span>Top Customers</span>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>My Flight Bookings</h1>
+                </div>
+                <div class="user-info">
+                    {% if session.username %}
+                    <div class="user-name">
+                        <span>Agent #{{ session.username }}</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>A</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <!-- Filter Form Card -->
+                <div class="card filter-card">
+                    <h3>Filter Bookings</h3>
+                    <form class="filter-form" method="POST" action="{{ url_for('agent_view_flights') }}">
+                        <div class="form-group">
+                            <label for="from_date">From Date:</label>
+                            <input type="date" id="from_date" name="from_date">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="to_date">To Date:</label>
+                            <input type="date" id="to_date" name="to_date">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="source">Departure Airport:</label>
+                            <input type="text" id="source" name="source" placeholder="e.g. JFK">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="destination">Arrival Airport:</label>
+                            <input type="text" id="destination" name="destination" placeholder="e.g. LAX">
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="filter-btn">Apply Filters</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Flights Table Card -->
+                <div class="card table-card">
+                    {% if flights %}
+                        <table class="flights-table">
+                            <thead>
+                                <tr>
+                                    <th>Flight #</th>
+                                    <th>Airline</th>
+                                    <th>Departure</th>
+                                    <th>Arrival</th>
+                                    <th>Departure Time</th>
+                                    <th>Arrival Time</th>
+                                    <th>Customer</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for flight in flights %}
+                                <tr>
+                                    <td>{{ flight.flight_num }}</td>
+                                    <td>{{ flight.airline_name }}</td>
+                                    <td>{{ flight.departure_airport }}</td>
+                                    <td>{{ flight.arrival_airport }}</td>
+                                    <td>{{ flight.departure_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ flight.arrival_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>{{ flight.customer_name }} ({{ flight.customer_email }})</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <div class="no-flights">
+                            <h3>No flights found</h3>
+                            <p>You haven't booked any flights matching the criteria, or you don't have any upcoming flights.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

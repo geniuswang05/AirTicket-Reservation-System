@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agent Flight Search Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .not-authorized {
+            background-color: #ffeeee;
+            color: #888;
+        }
+        .unauthorized-message {
+            color: #e74c3c;
+            font-style: italic;
+        }
+        #purchase-form {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        #purchase-form h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        #purchase-form input[type="email"] {
+            width: 250px;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+        }
+        .purchase-buttons {
+            margin-top: 15px;
+        }
+        .purchase-buttons .confirm-btn {
+            background-color: #4a69bd;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+            border-radius: 4px;
+        }
+        .purchase-buttons .cancel-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('agent_home') }}">
+                    <span class="icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('agent_search') }}" class="active">
+                    <span class="icon">🔍</span>
+                    <span>Search Flights</span>
+                </a>
+                <a href="{{ url_for('agent_view_flights') }}">
+                    <span class="icon">✈️</span>
+                    <span>My Bookings</span>
+                </a>
+                <a href="{{ url_for('agent_commission') }}">
+                    <span class="icon">💰</span>
+                    <span>Commission</span>
+                </a>
+                <a href="{{ url_for('agent_top_customers') }}">
+                    <span class="icon">👥</span>
+                    <span>Top Customers</span>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Flight Search Results</h1>
+                </div>
+                <div class="user-info">
+                    {% if session.username %}
+                    <div class="user-name">
+                        <span>Agent #{{ session.username }}</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>A</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <!-- Back to Search Card -->
+                <div class="card">
+                    <a href="{{ url_for('agent_search') }}" class="action-btn" style="width: auto; display: inline-block;">
+                        <span class="action-icon">🔍</span>
+                        <span>Back to Search</span>
+                    </a>
+                </div>
+                
+                <!-- Results Card -->
+                <div class="card">
+                    <h3>Available Flights</h3>
+                    
+                    {% if flights %}
+                        {% if authorized_airlines %}
+                        <div style="margin-bottom: 20px; padding: 10px; background-color: #f2f9ff; border-radius: 5px; border-left: 4px solid #4a69bd;">
+                            <p style="margin: 0; color: #2c3e50;">You are authorized to book flights for the following airlines: 
+                                {% for airline in authorized_airlines %}
+                                    <span style="font-weight: 500;">{{ airline }}</span>{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                        </div>
+                        {% endif %}
+
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background-color: #f2f2f2;">
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Flight Number</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Airline</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Departure Airport</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Arrival Airport</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Departure Time</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Arrival Time</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Price</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Status</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for flight in flights %}
+                                    <tr {% if not flight.can_book %}class="not-authorized"{% endif %}>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['flight_num'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['airline_name'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['departure_airport'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['arrival_airport'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['departure_time'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['arrival_time'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">${{ flight['price'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['status'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">
+                                            {% if flight.can_book %}
+                                                <button onclick="showPurchaseForm('{{ flight['airline_name'] }}', '{{ flight['flight_num'] }}')" class="action-btn" style="width: auto; padding: 8px 16px;">
+                                                    Purchase for Customer
+                                                </button>
+                                            {% else %}
+                                                <span class="unauthorized-message">Not authorized</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p style="text-align: center; color: #7f8c8d; padding: 40px 0;">
+                            No flights found matching your search criteria.
+                        </p>
+                        <p style="text-align: center; color: #7f8c8d;">
+                            Make sure you're entering airport codes exactly as they appear in the database (e.g., JFK, not jfk).
+                        </p>
+                    {% endif %}
+                </div>
+                
+                <!-- Purchase Form (initially hidden) -->
+                <div id="purchase-form" style="display: none;" class="card">
+                    <h3>Purchase Ticket for Customer</h3>
+                    <form action="{{ url_for('agent_purchase_ticket') }}" method="POST">
+                        <input type="hidden" id="airline_name_input" name="airline_name">
+                        <input type="hidden" id="flight_num_input" name="flight_num">
+                        
+                        <div class="form-group">
+                            <label for="customer_email">Customer Email:</label>
+                            <input type="email" id="customer_email" name="customer_email" required>
+                        </div>
+                        
+                        <div class="purchase-buttons">
+                            <input type="submit" value="Confirm Purchase" class="confirm-btn">
+                            <button type="button" onclick="hidePurchaseForm()" class="cancel-btn">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showPurchaseForm(airlineName, flightNum) {
+            document.getElementById('purchase-form').style.display = 'block';
+            document.getElementById('airline_name_input').value = airlineName;
+            document.getElementById('flight_num_input').value = flightNum;
+       // Scroll to the form
+            document.getElementById('purchase-form').scrollIntoView({behavior: 'smooth'});
+        }
+        
+        function hidePurchaseForm() {
+            document.getElementById('purchase-form').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

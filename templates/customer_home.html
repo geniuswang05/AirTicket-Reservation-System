@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Flight Finder - Customer Page</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('customer_home') }}" class="active">
+                    <span class="icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('search') }}">
+                    <span class="icon">🔍</span>
+                    <span>Search Flights</span>
+                </a>
+                <a href="{{ url_for('view_my_flights') }}">
+                    <span class="icon">✈️</span>
+                    <span>My Flights</span>
+                </a>
+                <a href="{{ url_for('track_spending') }}">
+                    <span class="icon">💰</span>
+                    <span>Track Spending</span>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Customer Dashboard</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">
+                        <span>{% if session.display_name %}{{ session.display_name }}{% else %}{{ username }}{% endif %}</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>{{ session.display_name[0] if session.display_name else username[0] }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                {% if banner %}
+                    <div class="card" style="background-color: #e8f5e9; color: #4caf50;">
+                        <p>{{ banner }}</p>
+                    </div>
+                {% endif %}
+                
+                <div class="card welcome-card">
+                    <h2>Hi {% if session.display_name %}{{ session.display_name }}{% else %}{{ username }}{% endif %}, Welcome!</h2>
+                    <p>Explore flight options, track your bookings, and monitor your spending.</p>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="stats-container">
+                    <div class="card stats-card">
+                        <div class="stats-icon">✈️</div>
+                        <div class="stats-info">
+                            <h3>Upcoming Flights</h3>
+                            <p class="stats-value">{{ upcoming_flights_count|default(0) }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card stats-card">
+                        <div class="stats-icon">💰</div>
+                        <div class="stats-info">
+                            <h3>Total Spent</h3>
+                            <p class="stats-value">${{ total_spent|default('0.00') }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card stats-card">
+                        <div class="stats-icon">📅</div>
+                        <div class="stats-info">
+                            <h3>Next Flight</h3>
+                            <p class="stats-value">{{ next_flight_date|default('No flights') }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card quick-actions-card">
+                    <h3>Quick Actions</h3>
+                    <div class="quick-actions">
+                        <a href="{{ url_for('search') }}" class="action-btn">
+                            <span class="action-icon">🔍</span>
+                            <span>Search Flights</span>
+                        </a>
+                        
+                        <a href="{{ url_for('view_my_flights') }}" class="action-btn">
+                            <span class="action-icon">✈️</span>
+                            <span>View My Flights</span>
+                        </a>
+                        
+                        <a href="{{ url_for('track_spending') }}" class="action-btn">
+                            <span class="action-icon">💰</span>
+                            <span>Track Spending</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

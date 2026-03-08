@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monthly Spending</title>
+    <!-- Include Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style type="text/css">
+        body {
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 20px;
+        }
+
+        .container {
+            width: 800px;
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 30px;
+        }
+
+        .total-spending {
+            font-size: 18px;
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            color: #333;
+        }
+
+        form {
+            margin: 20px 0;
+        }
+
+        label {
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        input[type=date] {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        input[type=submit] {
+            width: 100%;
+            background-color: rgba(99, 107, 224, 0.87);
+            color: white;
+            padding: 12px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        input[type=submit]:hover {
+            background-color: rgba(79, 86, 184, 0.87);
+        }
+
+        a {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(99, 107, 224, 0.87);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .error {
+            color: #d9534f;
+            background-color: #f9eaea;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="header">Monthly Spending Report</h1>
+        
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        {% if nonemp %}
+            <div class="chart-container">
+                <canvas id="spendingChart"></canvas>
+            </div>
+            
+            <div class="total-spending">
+                Total spending for the selected period: <strong>${{ allyear }}</strong>
+            </div>
+        {% else %}
+            <div class="total-spending">
+                Total spending for the past year: <strong>${{ allyear }}</strong>
+            </div>
+        {% endif %}
+        
+        <form action="/chartCusDate" method="POST">
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" required>
+            
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" required>
+            
+            <input type="submit" value="View Spending">
+        </form>
+        
+        <a href="/customer/home">Back to Dashboard</a>
+    </div>
+    
+    {% if nonemp %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get the canvas element
+            const ctx = document.getElementById('spendingChart').getContext('2d');
+            
+            // Convert month numbers to names
+            const monthNames = [
+                'January', 'February', 'March', 'April', 
+                'May', 'June', 'July', 'August', 
+                'September', 'October', 'November', 'December'
+            ];
+            
+            // Get data from Flask template
+            // We need to convert the Python list to a JavaScript array using the tojson filter
+            const monthNumbers = {{ month|tojson }};
+            const spending = {{ spent|tojson }};
+            
+            // Format labels as month names
+            const labels = monthNumbers.map(function(m) {
+                // Check if month is a number between 1-12
+                if (m >= 1 && m <= 12) {
+                    return monthNames[m-1];
+                }
+                // If it's already a string or not a valid month number, return as is
+                return m;
+            });
+            
+            // Create the chart
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Monthly Spending ($)',
+                        data: spending,
+                        backgroundColor: 'rgba(99, 107, 224, 0.7)',
+                        borderColor: 'rgba(99, 107, 224, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return '$' + context.raw;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Amount ($)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

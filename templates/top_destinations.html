@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Top Destinations - Wheelan Skylink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .destination-card {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f5f7fa;
+            border-radius: 8px;
+        }
+        .destination-card:hover {
+            background-color: #e9ecef;
+        }
+        .destination-rank {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: #4285f4;
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            margin-right: 15px;
+        }
+        .destination-rank.top1 { background-color: #FFC107; }
+        .destination-rank.top2 { background-color: #9E9E9E; }
+        .destination-rank.top3 { background-color: #CD7F32; }
+        .destination-info {
+            flex-grow: 1;
+        }
+        .destination-name {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .destination-meta {
+            font-size: 14px;
+            color: #666;
+        }
+        .destination-tickets {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4CAF50;
+        }
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-style: italic;
+        }
+        .airline-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('staff_home') }}">
+                    <span class="icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('view_reports') }}">
+                    <span class="icon">📊</span>
+                    <span>Reports</span>
+                </a>
+                <a href="{{ url_for('revenue_comparison') }}">
+                    <span class="icon">💰</span>
+                    <span>Revenue</span>
+                </a>
+                <a href="{{ url_for('top_destinations') }}" class="active">
+                    <span class="icon">🌍</span>
+                    <span>Destinations</span>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Top Destinations 
+                        {% if airline_name %}
+                        <span class="airline-badge">{{ airline_name }}</span>
+                        {% endif %}
+                    </h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">
+                        <span>Staff Account</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>S</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <!-- Last 3 Months -->
+                <div class="card">
+                    <h3>Top Destinations (Last 3 Months)</h3>
+                    
+                    {% if top_3_months %}
+                    <div>
+                        {% for row in top_3_months %}
+                        <div class="destination-card">
+                            <div class="destination-rank {% if loop.index == 1 %}top1{% elif loop.index == 2 %}top2{% elif loop.index == 3 %}top3{% endif %}">
+                                {{ loop.index }}
+                            </div>
+                            <div class="destination-info">
+                                <div class="destination-name">{{ row.destination }}</div>
+                                <div class="destination-meta">Popular destination</div>
+                            </div>
+                            <div class="destination-tickets">
+                                {{ row.tickets_sold }} tickets
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="monthsChart"></canvas>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        No destination data available for the last 3 months
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Last Year -->
+                <div class="card">
+                    <h3>Top Destinations (Last Year)</h3>
+                    
+                    {% if top_3_year %}
+                    <div>
+                        {% for row in top_3_year %}
+                        <div class="destination-card">
+                            <div class="destination-rank {% if loop.index == 1 %}top1{% elif loop.index == 2 %}top2{% elif loop.index == 3 %}top3{% endif %}">
+                                {{ loop.index }}
+                            </div>
+                            <div class="destination-info">
+                                <div class="destination-name">{{ row.destination }}</div>
+                                <div class="destination-meta">Popular destination</div>
+                            </div>
+                            <div class="destination-tickets">
+                                {{ row.tickets_sold }} tickets
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="yearChart"></canvas>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        No destination data available for the last year
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Insights -->
+                <div class="card">
+                    <h3>Destination Insights</h3>
+                    <p>These rankings show the most popular destinations based on ticket sales. Use this data to:</p>
+                    <ul style="padding-left: 20px; line-height: 1.6;">
+                        <li>Identify your airline's most profitable routes</li>
+                        <li>Plan seasonal promotions for popular destinations</li>
+                        <li>Consider increasing flight frequency to top destinations</li>
+                        <li>Track changes in travel patterns between short-term and long-term trends</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        {% if top_3_months %}
+        // Last 3 Months Chart
+        const monthsCtx = document.getElementById('monthsChart').getContext('2d');
+        new Chart(monthsCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% for row in top_3_months %}'{{ row.destination }}',{% endfor %}],
+                datasets: [{
+                    label: 'Tickets Sold',
+                    data: [{% for row in top_3_months %}{{ row.tickets_sold }},{% endfor %}],
+                    backgroundColor: ['#FFC107', '#9E9E9E', '#CD7F32'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Tickets'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Destination'
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+        
+        {% if top_3_year %}
+        // Last Year Chart
+        const yearCtx = document.getElementById('yearChart').getContext('2d');
+        new Chart(yearCtx, {
+            type: 'bar',
+            data: {
+                labels: [{% for row in top_3_year %}'{{ row.destination }}',{% endfor %}],
+                datasets: [{
+                    label: 'Tickets Sold',
+                    data: [{% for row in top_3_year %}{{ row.tickets_sold }},{% endfor %}],
+                    backgroundColor: ['#FFC107', '#9E9E9E', '#CD7F32'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Tickets'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Destination'
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>

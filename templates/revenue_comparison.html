@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Revenue Comparison - Wheelan Skylink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            height: 250px;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .data-summary {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .data-item {
+            flex: 1;
+            padding: 10px;
+        }
+        .data-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .data-label {
+            font-size: 14px;
+            color: #666;
+        }
+        .direct-color {
+            color: #4CAF50;
+        }
+        .indirect-color {
+            color: #FF9800;
+        }
+        .total-color {
+            color: #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('staff_home') }}">
+                    <span class="icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('view_reports') }}">
+                    <span class="icon">📊</span>
+                    <span>Reports</span>
+                </a>
+                <a href="{{ url_for('revenue_comparison') }}" class="active">
+                    <span class="icon">💰</span>
+                    <span>Revenue</span>
+                </a>
+                <a href="{{ url_for('top_destinations') }}">
+                    <span class="icon">🌍</span>
+                    <span>Destinations</span>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Revenue Comparison</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">
+                        <span>Staff Account</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>S</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <!-- Last Month Revenue -->
+                <div class="card">
+                    <h3>Last Month Revenue</h3>
+                    <div class="chart-container">
+                        <canvas id="monthChart"></canvas>
+                    </div>
+                    
+                    {% set month_total = (last_month.direct_revenue or 0) + (last_month.indirect_revenue or 0) %}
+                    <div class="data-summary">
+                        <div class="data-item">
+                            <div class="data-value direct-color">${{ "%.2f"|format(last_month.direct_revenue or 0) }}</div>
+                            <div class="data-label">Direct Sales</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value indirect-color">${{ "%.2f"|format(last_month.indirect_revenue or 0) }}</div>
+                            <div class="data-label">Indirect Sales</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value total-color">${{ "%.2f"|format(month_total) }}</div>
+                            <div class="data-label">Total Revenue</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Last Year Revenue -->
+                <div class="card">
+                    <h3>Last Year Revenue</h3>
+                    <div class="chart-container">
+                        <canvas id="yearChart"></canvas>
+                    </div>
+                    
+                    {% set year_total = (last_year.direct_revenue or 0) + (last_year.indirect_revenue or 0) %}
+                    <div class="data-summary">
+                        <div class="data-item">
+                            <div class="data-value direct-color">${{ "%.2f"|format(last_year.direct_revenue or 0) }}</div>
+                            <div class="data-label">Direct Sales</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value indirect-color">${{ "%.2f"|format(last_year.indirect_revenue or 0) }}</div>
+                            <div class="data-label">Indirect Sales</div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-value total-color">${{ "%.2f"|format(year_total) }}</div>
+                            <div class="data-label">Total Revenue</div>
+                        </div>
+                    </div>
+                </div>
+                
+                
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Create the charts with more specific options for better appearance
+        const monthCtx = document.getElementById('monthChart').getContext('2d');
+        new Chart(monthCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Direct Sales', 'Indirect Sales'],
+                datasets: [{
+                    data: [{{ last_month.direct_revenue or 0 }}, {{ last_month.indirect_revenue or 0 }}],
+                    backgroundColor: ['#4CAF50', '#FF9800'],
+                    borderWidth: 1,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.raw || 0;
+                                let total = context.chart.getDatasetMeta(0).total;
+                                let percentage = Math.round((value / total) * 100);
+                                return `${label}: $${value.toFixed(2)} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const yearCtx = document.getElementById('yearChart').getContext('2d');
+        new Chart(yearCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Direct Sales', 'Indirect Sales'],
+                datasets: [{
+                    data: [{{ last_year.direct_revenue or 0 }}, {{ last_year.indirect_revenue or 0 }}],
+                    backgroundColor: ['#4CAF50', '#FF9800'],
+                    borderWidth: 1,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.raw || 0;
+                                let total = context.chart.getDatasetMeta(0).total;
+                                let percentage = Math.round((value / total) * 100);
+                                return `${label}: $${value.toFixed(2)} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

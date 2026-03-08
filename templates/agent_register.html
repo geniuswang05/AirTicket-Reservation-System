@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agent Registration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Additional styles for multi-select */
+        select[multiple] {
+            height: 150px;
+            padding: 10px;
+            width: 100%;
+        }
+        .helper-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        /* Fix for dropdown text visibility */
+        select option {
+            color: #333; /* Dark text color */
+            background-color: white; /* Light background */
+        }
+        
+        /* Make selected items visible */
+        select[multiple] option:checked {
+            background-color: #4a69bd;
+            color: white;  /* Changed to white for better contrast */
+        }
+        
+        /* Ensure text is visible in the dropdown */
+        select {
+            color: #333;
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="left-panel">
+            <div class="brand">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+                <p class="tagline">Join our network of travel professionals</p>
+            </div>
+        </div>
+        <div class="right-panel">
+            <div class="login-form">
+                <h1>Booking Agent Registration</h1>
+                <h2>Create Your Account</h2>
+                
+                {% if error %}
+                    <div class="error-message">{{ error }}</div>
+                {% endif %}
+                
+                <form action="/agent/register" method="POST">
+                    <div class="form-group">
+                        <label for="email">Email Address:</label>
+                        <input type="email" id="email" name="email" value="{{ email or '' }}" placeholder="Enter your email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="booking_agent_id">Booking Agent ID:</label>
+                        <input type="text" id="booking_agent_id" name="booking_agent_id" value="{{ agent_id or '' }}" placeholder="Enter your agent ID" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" placeholder="Create a password" required>
+                        <div id="password-strength" style="margin-top: 5px; font-size: 12px;"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="airline_name">Airline Name(s):</label>
+                        <select id="airline_name" name="airline_name[]" multiple required>
+                            {% for airline in airlines %}
+                                <option value="{{ airline.airline_name }}">{{ airline.airline_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="helper-text">Hold Ctrl (or Cmd on Mac) to select multiple airlines. You can work for multiple airlines simultaneously.</div>
+                    </div>
+                    
+                    <button type="submit" class="login-btn">Register</button>
+                </form>
+                
+                <div class="register-link">
+                    <p>Already have an account? <a href="/agent/login">Login here</a></p>
+                    <p><a href="/">Go back to home</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+function validatePassword() {
+  const password = document.getElementById("password").value;
+  const strength = document.getElementById("password-strength");
+  
+  // Check password length
+  if (password.length < 8) {
+    strength.innerHTML = "Password is too short (min 8 characters)";
+    strength.style.color = "red";
+    return false;
+  }
+  
+  // Check for numbers and letters
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+    strength.innerHTML = "Password should contain uppercase, lowercase, and numbers";
+    strength.style.color = "orange";
+    return false;
+  }
+  
+  strength.innerHTML = "Password strength: Strong";
+  strength.style.color = "green";
+  return true;
+}
+
+// Add an onSubmit handler to the form
+document.querySelector("form").onsubmit = function(e) {
+  if (!validatePassword()) {
+    e.preventDefault();
+  }
+};
+
+// Add real-time validation as user types
+document.getElementById("password").addEventListener("input", validatePassword);
+</script>
+</body>
+</html>

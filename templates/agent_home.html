@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Agent Dashboard - Wheelan Skylink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('agent_home') }}" class="active">
+                    <span class="icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('agent_search') }}">
+                    <span class="icon">🔍</span>
+                    <span>Search Flights</span>
+                </a>
+                <a href="{{ url_for('agent_view_flights') }}">
+                    <span class="icon">✈️</span>
+                    <span>View Bookings</span>
+                </a>
+                <a href="{{ url_for('agent_commission') }}">
+                    <span class="icon">💰</span>
+                    <span>Commission</span>
+                </a>
+                <a href="{{ url_for('agent_top_customers') }}">
+                    <span class="icon">👥</span>
+                    <span>Top Customers</span>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Agent Dashboard</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">
+                        <span>Agent ID: {{ username }}</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>{{ username[0]|upper }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                {% if banner %}
+                    <div class="card" style="background-color: {% if 'successfully' in banner %}#e8f5e9; color: #4caf50{% else %}#ffebee; color: #e53935{% endif %};">
+                        <p>{{ banner }}</p>
+                    </div>
+                {% endif %}
+                
+                {% if error %}
+                    <div class="card" style="background-color: #ffebee; color: #e53935;">
+                        <p>{{ error }}</p>
+                    </div>
+                {% endif %}
+                
+                <div class="card welcome-card">
+                    <h2>Hi Agent (ID: {{ username }}), Welcome!</h2>
+                    <p>Book flights for customers, track your commissions, and monitor your sales performance.</p>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="stats-container">
+                    <div class="card stats-card">
+                        <div class="stats-icon">📊</div>
+                        <div class="stats-info">
+                            <h3>Tickets Sold (30 days)</h3>
+                            <p class="stats-value">{{ tickets_sold|default(0) }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card stats-card">
+                        <div class="stats-icon">💰</div>
+                        <div class="stats-info">
+                            <h3>Commission (30 days)</h3>
+                            <p class="stats-value">${{ commission|default('0.00') }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Airlines -->
+                <div class="card">
+                    <h3>Your Airlines</h3>
+                    {% if airlines %}
+                        <ul class="airline-list">
+                            {% for airline in airlines %}
+                                <li>{{ airline.airline_name }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>You are not currently associated with any airlines. An airline staff with admin permission needs to add you to their airline.</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card quick-actions-card">
+                    <h3>Quick Actions</h3>
+                    <div class="quick-actions">
+                        <a href="{{ url_for('agent_search') }}" class="action-btn">
+                            <span class="action-icon">🔍</span>
+                            <span>Search Flights</span>
+                        </a>
+                        
+                        <a href="{{ url_for('agent_view_flights') }}" class="action-btn">
+                            <span class="action-icon">✈️</span>
+                            <span>View All Bookings</span>
+                        </a>
+                        
+                        <a href="{{ url_for('agent_commission') }}" class="action-btn">
+                            <span class="action-icon">💰</span>
+                            <span>View Commission</span>
+                        </a>
+                        
+                        <a href="{{ url_for('agent_top_customers') }}" class="action-btn">
+                            <span class="action-icon">👥</span>
+                            <span>View Top Customers</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

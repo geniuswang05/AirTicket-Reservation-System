@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frequent Customers - Wheelan Skylink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table th { background-color: #f5f7fa; text-align: left; padding: 12px; border-bottom: 1px solid #ddd; }
+        table td { padding: 12px; border-bottom: 1px solid #efefef; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ddd; }
+        .form-submit { background-color: #4285f4; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: 500; }
+        .form-submit:hover { background-color: #3367d6; }
+        .customer-box {
+            background-color: #f5f7fa;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .customer-avatar {
+            width: 60px;
+            height: 60px;
+            background-color: #4285f4;
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 20px;
+        }
+        .customer-info {
+            flex-grow: 1;
+        }
+        .customer-name {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        .customer-stats {
+            font-size: 14px;
+            color: #666;
+        }
+        .flight-count {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #4CAF50;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-style: italic;
+        }
+        .airline-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('staff_home') }}">
+                    <span class="icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('view_agents') }}">
+                    <span class="icon">🧑‍💼</span>
+                    <span>View Agents</span>
+                </a>
+                <a href="{{ url_for('frequent_customer') }}" class="active">
+                    <span class="icon">👥</span>
+                    <span>Top Customers</span>
+                </a>
+                <a href="{{ url_for('view_reports') }}">
+                    <span class="icon">📊</span>
+                    <span>Reports</span>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Frequent Customers
+                        {% if airline_name %}
+                        <span class="airline-badge">{{ airline_name }}</span>
+                        {% endif %}
+                    </h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">
+                        <span>Staff Account</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>S</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <!-- Top Customer Card -->
+                <div class="card">
+                    <h3>Most Frequent Customer (Past Year)</h3>
+                    
+                    {% if top_customer %}
+                    <div class="customer-box">
+                        <div class="customer-avatar">
+                            {{ top_customer.name[0] | upper }}
+                        </div>
+                        <div class="customer-info">
+                            <div class="customer-name">{{ top_customer.name }}</div>
+                            <div class="customer-stats">Most flights in the past year</div>
+                        </div>
+                        <div class="flight-count">
+                            {{ top_customer.flight_count }} flights
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        No customer data available for the past year
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Customer Search Card -->
+                <div class="card">
+                    <h3>Check Customer Flight History</h3>
+                    
+                    <form method="POST">
+                        <div class="form-group">
+                            <label>Customer Name:</label>
+                            <input type="text" name="customer_name" required placeholder="Enter customer's full name">
+                        </div>
+                        <button type="submit" class="form-submit">Check Flights</button>
+                    </form>
+                </div>
+                
+                <!-- Search Results Card (shown conditionally) -->
+                {% if customer_name %}
+                <div class="card">
+                    <h3>Flights for {{ customer_name }}</h3>
+                    
+                    {% if customer_flights %}
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Flight #</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Departure Time</th>
+                                    <th>Arrival Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for flight in customer_flights %}
+                                <tr>
+                                    <td>{{ flight.flight_num }}</td>
+                                    <td>{{ flight.departure_airport }}</td>
+                                    <td>{{ flight.arrival_airport }}</td>
+                                    <td>{{ flight.departure_time }}</td>
+                                    <td>{{ flight.arrival_time }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        No flights found for {{ customer_name }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

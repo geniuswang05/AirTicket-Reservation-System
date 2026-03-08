@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Air Ticket Reservation System - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('hello') }}" class="active">
+                    <span class="icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('search') if session.user_type == 'customer' else url_for('agent_search') if session.user_type == 'agent' else '#' }}">
+                    <span class="icon">🔍</span>
+                    <span>Search Flights</span>
+                </a>
+                
+                {% if session.user_type == 'customer' %}
+                <a href="{{ url_for('view_my_flights') }}">
+                    <span class="icon">✈️</span>
+                    <span>My Flights</span>
+                </a>
+                <a href="{{ url_for('track_spending') }}">
+                    <span class="icon">💰</span>
+                    <span>Track Spending</span>
+                </a>
+                {% elif session.user_type == 'agent' %}
+                <a href="{{ url_for('agent_view_flights') }}">
+                    <span class="icon">✈️</span>
+                    <span>Bookings</span>
+                </a>
+                <a href="{{ url_for('agent_commission') }}">
+                    <span class="icon">💰</span>
+                    <span>Commission</span>
+                </a>
+                <a href="{{ url_for('agent_top_customers') }}">
+                    <span class="icon">👥</span>
+                    <span>Top Customers</span>
+                </a>
+                {% elif session.user_type == 'staff' %}
+                <a href="#">
+                    <span class="icon">✈️</span>
+                    <span>Manage Flights</span>
+                </a>
+                <a href="#">
+                    <span class="icon">🛩️</span>
+                    <span>Manage Airplanes</span>
+                </a>
+                <a href="#">
+                    <span class="icon">📊</span>
+                    <span>View Reports</span>
+                </a>
+                {% endif %}
+                
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navigation Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Dashboard</h1>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">
+                        {% if session.user_type == 'customer' %}
+                            <span>{{ session.display_name }}</span>
+                        {% elif session.user_type == 'agent' %}
+                            <span>Agent ID: {{ session.username }}</span>
+                        {% elif session.user_type == 'staff' %}
+                            <span>{{ session.username }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="user-avatar">
+                        <span>{{ session.display_name[0] if session.display_name else session.username[0] }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Dashboard Content -->
+            <div class="dashboard-content">
+                <!-- Welcome Card -->
+                <div class="card welcome-card">
+                    <h2>Welcome back, {% if session.display_name %}{{ session.display_name }}{% else %}{{ session.username }}{% endif %}!</h2>
+                    <p>
+                        {% if session.user_type == 'customer' %}
+                            Explore flight options, track your bookings, and monitor your spending.
+                        {% elif session.user_type == 'agent' %}
+                            Book flights for customers, track your commissions, and monitor your sales performance.
+                        {% elif session.user_type == 'staff' %}
+                            Manage flights, airplanes, and view comprehensive reports.
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <!-- Quick Stats -->
+                <div class="stats-container">
+                    <div class="card stats-card">
+                        <div class="stats-icon">✈️</div>
+                        <div class="stats-info">
+                            <h3>
+                                {% if session.user_type == 'customer' %}
+                                    Upcoming Flights
+                                {% elif session.user_type == 'agent' %}
+                                    Tickets Sold
+                                {% elif session.user_type == 'staff' %}
+                                    Active Flights
+                                {% endif %}
+                            </h3>
+                            <p class="stats-value">
+                                {% if session.user_type == 'agent' and stats %}
+                                    {{ stats.tickets_sold|default(0) }}
+                                {% else %}
+                                    5
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="card stats-card">
+                        <div class="stats-icon">💰</div>
+                        <div class="stats-info">
+                            <h3>
+                                {% if session.user_type == 'customer' %}
+                                    Total Spent
+                                {% elif session.user_type == 'agent' %}
+                                    Commission
+                                {% elif session.user_type == 'staff' %}
+                                    Revenue
+                                {% endif %}
+                            </h3>
+                            <p class="stats-value">
+                                {% if session.user_type == 'agent' and stats %}
+                                    ${{ '%.2f'|format(stats.commission|float) if stats.commission else '0.00' }}
+                                {% else %}
+                                    $1,250.00
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="card stats-card">
+                        <div class="stats-icon">📅</div>
+                        <div class="stats-info">
+                            <h3>Next Flight</h3>
+                            <p class="stats-value">May 15</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Charts -->
+                <div class="charts-container">
+                    <div class="card chart-card">
+                        <h3>Flight Distribution by Airline</h3>
+                        <div class="chart-container">
+                            <canvas id="airlineChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card chart-card">
+                        <h3>
+                            {% if session.user_type == 'customer' %}
+                                Monthly Spending
+                            {% elif session.user_type == 'agent' %}
+                                Monthly Commission
+                            {% elif session.user_type == 'staff' %}
+                                Monthly Revenue
+                            {% endif %}
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="monthlyChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="card quick-actions-card">
+                    <h3>Quick Actions</h3>
+                    <div class="quick-actions">
+                        <a href="{{ url_for('search') if session.user_type == 'customer' else url_for('agent_search') if session.user_type == 'agent' else '#' }}" class="action-btn">
+                            <span class="action-icon">🔍</span>
+                            <span>Search Flights</span>
+                        </a>
+                        
+                        {% if session.user_type == 'customer' %}
+                        <a href="{{ url_for('view_my_flights') }}" class="action-btn">
+                            <span class="action-icon">✈️</span>
+                            <span>View My Flights</span>
+                        </a>
+                        <a href="{{ url_for('track_spending') }}" class="action-btn">
+                            <span class="action-icon">💰</span>
+                            <span>Track Spending</span>
+                        </a>
+                        {% elif session.user_type == 'agent' %}
+                        <a href="{{ url_for('agent_view_flights') }}" class="action-btn">
+                            <span class="action-icon">✈️</span>
+                            <span>View Bookings</span>
+                        </a>
+                        <a href="{{ url_for('agent_commission') }}" class="action-btn">
+                            <span class="action-icon">💰</span>
+                            <span>View Commission</span>
+                        </a>
+                        {% elif session.user_type == 'staff' %}
+                        <a href="#" class="action-btn">
+                            <span class="action-icon">✈️</span>
+                            <span>Add Flight</span>
+                        </a>
+                        <a href="#" class="action-btn">
+                            <span class="action-icon">🛩️</span>
+                            <span>Add Airplane</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Data for charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Airline Distribution Chart
+            const airlineCtx = document.getElementById('airlineChart').getContext('2d');
+            const airlineChart = new Chart(airlineCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['China Eastern', 'Emirates', 'Delta Airlines', 'United Airlines', 'Lufthansa', 'Air France'],
+                    datasets: [{
+                        data: [35, 20, 15, 12, 10, 8],
+                        backgroundColor: [
+                            '#4a69bd',
+                            '#6a89cc',
+                            '#82ccdd',
+                            '#b8e994',
+                            '#f6b93b',
+                            '#e55039'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Monthly Chart
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            const monthlyChart = new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: {% if session.user_type == 'customer' %}'Spending'{% elif session.user_type == 'agent' %}'Commission'{% else %}'Revenue'{% endif %},
+                        data: [450, 320, 580, 720, 650, 830],
+                        backgroundColor: '#4a69bd',
+                        borderWidth: 0,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Wheelan Skylink</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background-color: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.05);
+            padding: 25px 0;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .sidebar-header h2 {
+            font-size: 24px;
+            margin-top: 20px;
+            color: #4a69bd;
+        }
+        
+        .sidebar-logo {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 30px;
+            padding: 0 20px;
+        }
+        
+        .sidebar-section h3 {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #8395a7;
+            margin-bottom: 15px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            padding: 0 15px;
+        }
+        
+        .sidebar-link {
+            display: block;
+            padding: 10px 15px;
+            color: #2c3e50;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: background-color 0.2s;
+            font-size: 14px;
+        }
+        
+        .sidebar-link:hover {
+            background-color: #f8f9fa;
+            color: #4a69bd;
+        }
+        
+        .sidebar-link span {
+            margin-right: 10px;
+        }
+        
+        .account-subsection {
+            margin: 5px 0 15px 15px;
+        }
+        
+        .account-subsection h4 {
+            font-size: 13px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            background-color: #f5f7fa;
+            overflow-y: auto;
+        }
+        
+        .welcome-banner {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1531642765602-5cae8bbbf285?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            padding: 60px;
+            border-radius: 10px;
+            color: white;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .welcome-banner h1 {
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        
+        .welcome-banner p {
+            font-size: 18px;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+        
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            padding: 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #4a69bd;
+            font-size: 22px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #f1f1f1;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #4a69bd;
+            box-shadow: 0 0 0 2px rgba(74, 105, 189, 0.1);
+        }
+        
+        .btn {
+            background-color: #4a69bd;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3a539b;
+        }
+        
+        /* Account type section styles */
+        .account-type {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .account-option {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .account-option:hover {
+            background-color: #eef2f7;
+        }
+        
+        .account-option h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .account-links a {
+            color: #4a69bd;
+            text-decoration: none;
+            font-weight: 500;
+            margin-right: 15px;
+            transition: color 0.3s;
+        }
+        
+        .account-links a:hover {
+            color: #3a539b;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo" class="sidebar-logo">
+            <h2>Wheelan Skylink</h2>
+        </div>
+        
+        <div class="sidebar-section">
+            <h3>PUBLIC SEARCH</h3>
+            <a href="{{ url_for('hello') }}" class="sidebar-link">
+                <span>🏠</span> Home
+            </a>
+            <a href="{{ url_for('search') }}" class="sidebar-link">
+                <span>🔍</span> Search Flights
+            </a>
+            <a href="{{ url_for('check') }}" class="sidebar-link">
+                <span>✈️</span> Flight Status
+            </a>
+        </div>
+        
+        <div class="sidebar-section">
+            <h3>ACCOUNT</h3>
+            <a href="/login" class="sidebar-link">
+                <span>🔑</span> Login
+            </a>
+            <a href="/register" class="sidebar-link">
+                <span>📝</span> Register
+            </a>
+        </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <h1>Welcome to Wheelan Skylink</h1>
+            <p>Your journey begins with a simple search. Find the best flights to your destination and manage your travel experience with ease.</p>
+        </div>
+        
+        <!-- Cards Container -->
+        <div class="card-container">
+            <!-- Account Types Card -->
+            <div class="card">
+                <h2>Account Options</h2>
+    
+                <div class="account-type">
+                    <div class="account-option">
+                        <h4>Access Your Account</h4>
+                        <div class="account-links">
+                            <a href="/login">Login</a>
+                            <a href="/register">Register</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Flights Card -->
+            <div class="card">
+                <h2>Search Upcoming Flights</h2>
+                <form action="{{ url_for('search') }}" method="POST">
+                    <div class="form-group">
+                        <label>From City or Airport:</label>
+                        <input type="text" name="source" placeholder="e.g. JFK or New York" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>To City or Airport:</label>
+                        <input type="text" name="destination" placeholder="e.g. LAX or Los Angeles" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Date of Departure:</label>
+                        <input type="date" name="date" required>
+                    </div>
+                    
+                    <button type="submit" class="btn">Search Flights</button>
+                </form>
+            </div>
+            
+            <!-- Check Status Card -->
+            <div class="card">
+                <h2>Check Flight Status</h2>
+                <form action="{{ url_for('check') }}" method="POST">
+                    <div class="form-group">
+                        <label>Flight Number:</label>
+                        <input type="text" name="flight_number" placeholder="e.g. AA123" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Date of Arrival/Departure:</label>
+                        <input type="date" name="date" required>
+                    </div>
+                    
+                    <button type="submit" class="btn">Check Status</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

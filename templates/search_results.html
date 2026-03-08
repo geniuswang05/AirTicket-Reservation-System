@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flight Search Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                {% if session.user_type == 'customer' %}
+                    <a href="{{ url_for('customer_home') }}">
+                        <span class="icon">🏠</span>
+                        <span>Home</span>
+                    </a>
+                    <a href="{{ url_for('search') }}" class="active">
+                        <span class="icon">🔍</span>
+                        <span>Search Flights</span>
+                    </a>
+                    <a href="{{ url_for('view_my_flights') }}">
+                        <span class="icon">✈️</span>
+                        <span>My Flights</span>
+                    </a>
+                    <a href="{{ url_for('track_spending') }}">
+                        <span class="icon">💰</span>
+                        <span>Track Spending</span>
+                    </a>
+                {% elif session.user_type == 'agent' %}
+                    <a href="{{ url_for('agent_home') }}">
+                        <span class="icon">🏠</span>
+                        <span>Home</span>
+                    </a>
+                    <a href="{{ url_for('agent_search') }}" class="active">
+                        <span class="icon">🔍</span>
+                        <span>Search Flights</span>
+                    </a>
+                    <a href="{{ url_for('agent_view_flights') }}">
+                        <span class="icon">✈️</span>
+                        <span>My Bookings</span>
+                    </a>
+                    <a href="{{ url_for('agent_commission') }}">
+                        <span class="icon">💰</span>
+                        <span>Commission</span>
+                    </a>
+                    <a href="{{ url_for('agent_top_customers') }}">
+                        <span class="icon">👥</span>
+                        <span>Top Customers</span>
+                    </a>
+                {% elif session.user_type == 'staff' %}
+                    <a href="{{ url_for('staff_home') }}">
+                        <span class="icon">🏠</span>
+                        <span>Home</span>
+                    </a>
+                    <a href="{{ url_for('search') }}" class="active">
+                        <span class="icon">🔍</span>
+                        <span>Search Flights</span>
+                    </a>
+                    <a href="#">
+                        <span class="icon">✈️</span>
+                        <span>Manage Flights</span>
+                    </a>
+                    <a href="#">
+                        <span class="icon">🛩️</span>
+                        <span>Manage Airplanes</span>
+                    </a>
+                    <a href="#">
+                        <span class="icon">📊</span>
+                        <span>View Reports</span>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('hello') }}">
+                        <span class="icon">🏠</span>
+                        <span>Home</span>
+                    </a>
+                    <a href="{{ url_for('search') }}" class="active">
+                        <span class="icon">🔍</span>
+                        <span>Search Flights</span>
+                    </a>
+                {% endif %}
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Flight Search Results</h1>
+                </div>
+                <div class="user-info">
+                    {% if session.username %}
+                    <div class="user-name">
+                        <span>{{ session.display_name if session.display_name else session.username }}</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>{{ (session.display_name if session.display_name else session.username)[0] }}</span>
+                    </div>
+                    {% else %}
+                    <div class="user-name">
+                        <span>Guest</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>G</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <!-- Back to Search Card -->
+                <div class="card">
+                    <a href="{{ url_for('search') }}" class="action-btn" style="width: auto; display: inline-block;">
+                        <span class="action-icon">🔍</span>
+                        <span>Back to Search</span>
+                    </a>
+                </div>
+                
+                <!-- Results Card -->
+                <div class="card">
+                    <h3>Available Flights</h3>
+                    
+                    {% if flights %}
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background-color: #f2f2f2;">
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Flight Number</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Departure Airport</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Arrival Airport</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Departure Time</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Arrival Time</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Price</th>
+                                        {% if 'username' in session %}
+                                        <th style="padding: 12px; text-align: left; border-bottom: 2px solid #ddd;">Action</th>
+                                        {% endif %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for flight in flights %}
+                                    <tr>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['flight_num'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['departure_airport'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['arrival_airport'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['departure_time'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">{{ flight['arrival_time'] }}</td>
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">${{ flight['price'] }}</td>
+                                        {% if 'username' in session %}
+                                        <td style="padding: 12px; border-bottom: 1px solid #ddd;">
+                                            <form action="{{ url_for('purchase_ticket') }}" method="POST" style="margin: 0;">
+                                                <input type="hidden" name="airline_name" value="{{ flight['airline_name'] }}">
+                                                <input type="hidden" name="flight_num" value="{{ flight['flight_num'] }}">
+                                                <button type="submit" class="action-btn" style="width: auto; padding: 8px 16px;">
+                                                    Purchase
+                                                </button>
+                                            </form>
+                                        </td>
+                                        {% endif %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p style="text-align: center; color: #7f8c8d; padding: 40px 0;">
+                            No flights found matching your criteria. Try adjusting your search parameters.
+                        </p>
+                    {% endif %}
+                    
+                    {% if 'username' not in session %}
+                    <div style="margin-top: 20px; padding: 15px; background-color: #f8f8f8; border-radius: 5px;">
+                        <p style="margin: 0;">Please <a href="{{ url_for('customer_login') }}" style="color: #4a69bd; text-decoration: none;">log in</a> or <a href="{{ url_for('customer_register') }}" style="color: #4a69bd; text-decoration: none;">register</a> to purchase tickets.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

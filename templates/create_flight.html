@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Flight - Wheelan Skylink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ddd; }
+        .form-submit { background-color: #4285f4; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: 500; }
+        .form-submit:hover { background-color: #3367d6; }
+        .airline-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        .error-banner {
+            padding: 15px;
+            background-color: #ffebee;
+            color: #f44336;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .permission-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        .admin-badge {
+            background-color: #e8f5e9;
+            color: #4caf50;
+        }
+        .no-admin-badge {
+            background-color: #ffebee;
+            color: #f44336;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 20px; 
+        }
+        table th { 
+            background-color: #f5f7fa; 
+            text-align: left; 
+            padding: 12px; 
+            border-bottom: 1px solid #ddd; 
+        }
+        table td { 
+            padding: 12px; 
+            border-bottom: 1px solid #efefef; 
+        }
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .status-upcoming { background-color: #e3f2fd; color: #1976d2; }
+        .status-inprogress { background-color: #e8f5e9; color: #4caf50; }
+        .status-delayed { background-color: #fff8e1; color: #ffa000; }
+        .status-cancelled { background-color: #ffebee; color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='images/airplane-logo.png') }}" alt="Logo">
+                <h2>Wheelan Skylink</h2>
+            </div>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('staff_home') }}">
+                    <span class="icon">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a href="{{ url_for('create_flight') }}" class="active">
+                    <span class="icon">✈️</span>
+                    <span>Create Flight</span>
+                </a>
+                <a href="{{ url_for('update_flight_status') }}">
+                    <span class="icon">🔄</span>
+                    <span>Update Status</span>
+                </a>
+                <a href="{{ url_for('add_airplane') }}">
+                    <span class="icon">🛩️</span>
+                    <span>Add Airplane</span>
+                </a>
+                <a href="{{ url_for('view_reports') }}">
+                    <span class="icon">📊</span>
+                    <span>Reports</span>
+                </a>
+                <a href="{{ url_for('logout') }}">
+                    <span class="icon">🚪</span>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Create New Flight <span class="airline-badge">{{ airline }}</span></h1>
+                    {% if has_admin_permission %}
+                    <span class="permission-badge admin-badge">Admin Access</span>
+                    {% else %}
+                    <span class="permission-badge no-admin-badge">No Admin Access</span>
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <div class="user-name">
+                        <span>Staff Account</span>
+                    </div>
+                    <div class="user-avatar">
+                        <span>S</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="dashboard-content">
+                <!-- Create Flight Form -->
+                <div class="card">
+                    <h3>Flight Details</h3>
+                    
+                    {% if error %}
+                    <div class="error-banner">
+                        <strong>Error:</strong> {{ error }}
+                    </div>
+                    {% endif %}
+                    
+                    {% if not has_admin_permission %}
+                    <div class="error-banner">
+                        <strong>Permission Required:</strong> You need admin permission to create flights. Please contact your system administrator.
+                    </div>
+                    {% else %}
+                    <form method="POST">
+                        <div class="form-group">
+                            <label>Flight Number:</label>
+                            <input type="number" name="flight_num" required placeholder="e.g., 101" 
+                                   value="{{ form_data.flight_num if form_data else '' }}">
+                        </div>
+                        
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label>Departure Time:</label>
+                                <input type="datetime-local" name="departure_time" required 
+                                       value="{{ form_data.departure_time if form_data else '' }}">
+                            </div>
+                            
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label>Arrival Time:</label>
+                                <input type="datetime-local" name="arrival_time" required
+                                       value="{{ form_data.arrival_time if form_data else '' }}">
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label>Departure Airport:</label>
+                                <input type="text" name="departs_airport_name" required placeholder="e.g., JFK"
+                                       value="{{ form_data.departs_airport_name if form_data else '' }}">
+                            </div>
+                            
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label>Arrival Airport:</label>
+                                <input type="text" name="arrives_airport_name" required placeholder="e.g., LAX"
+                                       value="{{ form_data.arrives_airport_name if form_data else '' }}">
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label>Airplane ID:</label>
+                                <input type="text" name="airplane_id" required placeholder="Enter available airplane ID"
+                                       value="{{ form_data.airplane_id if form_data else '' }}">
+                            </div>
+                            
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label>Price ($):</label>
+                                <input type="number" name="price" required min="0" step="0.01" placeholder="e.g., 599.99"
+                                       value="{{ form_data.price if form_data else '' }}">
+                            </div>
+                            
+                            <div class="form-group" style="flex: 1; min-width: 200px;">
+                                <label>Status:</label>
+                                <select name="status">
+                                    <option value="upcoming" {% if form_data and form_data.status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                                    <option value="in progress" {% if form_data and form_data.status == 'in progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="delayed" {% if form_data and form_data.status == 'delayed' %}selected{% endif %}>Delayed</option>
+                                    <option value="cancelled" {% if form_data and form_data.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="form-submit">Create Flight</button>
+                    </form>
+                    {% endif %}
+                </div>
+                
+                <!-- Tips Card -->
+                <div class="card">
+                    <h3>Tips for Creating Flights</h3>
+                    <ul style="padding-left: 20px; line-height: 1.6;">
+                        <li>Flight numbers must be unique for your airline.</li>
+                        <li>Make sure the airplane ID belongs to your airline and exists in the system.</li>
+                        <li>Arrival time must be after departure time.</li>
+                        <li>Airport codes should be valid (e.g., JFK, LAX, SFO).</li>
+                        <li>For international flights, ensure all required information is accurate.</li>
+                        <li><strong>Permission Required:</strong> Only staff with Admin permission can create flights.</li>
+                    </ul>
+                </div>
+                
+                <!-- Upcoming Flights -->
+                <div class="card">
+                    <h3>Upcoming Flights (Next 30 Days)</h3>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Flight #</th>
+                                    <th>Airplane ID</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Departure</th>
+                                    <th>Arrival</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for flight in flights %}
+                                <tr>
+                                    <td>{{ flight.flight_num }}</td>
+                                    <td>{{ flight.airplane_id }}</td>
+                                    <td>{{ flight.departure_airport }}</td>
+                                    <td>{{ flight.arrival_airport }}</td>
+                                    <td>{{ flight.departure_time }}</td>
+                                    <td>{{ flight.arrival_time }}</td>
+                                    <td>
+                                        <span class="status-indicator 
+                                            {% if flight.status == 'upcoming' %}status-upcoming
+                                            {% elif flight.status == 'in progress' %}status-inprogress
+                                            {% elif flight.status == 'delayed' %}status-delayed
+                                            {% elif flight.status == 'cancelled' %}status-cancelled
+                                            {% endif %}">
+                                            {{ flight.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% if not flights %}
+                                <tr>
+                                    <td colspan="7" style="text-align: center;">No upcoming flights found</td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
