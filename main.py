@@ -8,7 +8,7 @@ app = Flask(__name__)
 # Configure MySQL connection function
 def getConnect():
     return mysql.connector.connect(
-        host="localhost",
+        host="127.0.0.1",
         user="root",
         password="",
         database="air_reservation"  # Keep your database name
